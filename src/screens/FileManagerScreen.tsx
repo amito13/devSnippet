@@ -4,23 +4,24 @@ import {
 } from "react";
 
 import {
-  View,
-  Text,
+  Alert,
   FlatList,
   StyleSheet,
+  Text,
   TouchableOpacity,
-  Alert,
+  View,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 import {
-  getExportedFiles,
   deleteFile,
+  getExportedFiles,
 } from "../services/fileService";
+import { useAppTheme } from "../theme/AppTheme";
 
 export default function FileManagerScreen() {
-  const [files, setFiles] = useState<
-    string[]
-  >([]);
+  const [files, setFiles] = useState<string[]>([]);
+  const { colors } = useAppTheme();
 
   useEffect(() => {
     loadFiles();
@@ -46,14 +47,9 @@ export default function FileManagerScreen() {
 
         {
           text: "Delete",
-
           style: "destructive",
-
           onPress: async () => {
-            await deleteFile(
-              fileName
-            );
-
+            await deleteFile(fileName);
             loadFiles();
           },
         },
@@ -62,46 +58,123 @@ export default function FileManagerScreen() {
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.heading}>
-        Exported Files
-      </Text>
-
+    <SafeAreaView
+      edges={["top", "left", "right"]}
+      style={[
+        styles.container,
+        {
+          backgroundColor: colors.background,
+        },
+      ]}
+    >
       <FlatList
         data={files}
         keyExtractor={(item) => item}
-        contentContainerStyle={{
-          paddingTop: 20,
-        }}
+        contentContainerStyle={styles.listContent}
+        ListHeaderComponent={
+          <View style={styles.header}>
+            <Text
+              selectable
+              style={[
+                styles.heading,
+                {
+                  color: colors.text,
+                },
+              ]}
+            >
+              Exported Files
+            </Text>
+
+            <Text
+              selectable
+              style={[
+                styles.subheading,
+                {
+                  color: colors.textMuted,
+                },
+              ]}
+            >
+              Manage the text exports you have created
+              from snippets.
+            </Text>
+          </View>
+        }
         ListEmptyComponent={
-          <Text style={styles.empty}>
-            No exported files
-          </Text>
+          <View
+            style={[
+              styles.emptyCard,
+              {
+                backgroundColor: colors.surface,
+                borderColor: colors.border,
+              },
+            ]}
+          >
+            <Text
+              style={[
+                styles.empty,
+                {
+                  color: colors.textMuted,
+                },
+              ]}
+            >
+              No exported files yet
+            </Text>
+          </View>
         }
         renderItem={({ item }) => (
-          <View style={styles.card}>
-            <View>
-              <Text style={styles.fileName}>
+          <View
+            style={[
+              styles.card,
+              {
+                backgroundColor: colors.surface,
+                borderColor: colors.border,
+              },
+            ]}
+          >
+            <View style={styles.fileInfo}>
+              <Text
+                numberOfLines={1}
+                style={[
+                  styles.fileName,
+                  {
+                    color: colors.text,
+                  },
+                ]}
+              >
                 {item}
               </Text>
 
-              <Text style={styles.fileType}>
+              <Text
+                style={[
+                  styles.fileType,
+                  {
+                    color: colors.textMuted,
+                  },
+                ]}
+              >
                 Text File
               </Text>
             </View>
 
             <TouchableOpacity
-              style={
-                styles.deleteButton
-              }
+              activeOpacity={0.85}
+              style={[
+                styles.deleteButton,
+                {
+                  backgroundColor: colors.accentSoft,
+                },
+              ]}
               onPress={() =>
                 handleDelete(item)
               }
             >
               <Text
-                style={
-                  styles.deleteText
-                }
+                style={[
+                  styles.deleteText,
+                  {
+                    color: colors.accent,
+                  },
+                ]}
               >
                 Delete
               </Text>
@@ -109,61 +182,79 @@ export default function FileManagerScreen() {
           </View>
         )}
       />
-    </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#0F172A",
+  },
+
+  listContent: {
     padding: 16,
+    paddingBottom: 40,
+  },
+
+  header: {
+    marginBottom: 20,
+    gap: 8,
   },
 
   heading: {
-    color: "white",
-    fontSize: 28,
-    fontWeight: "bold",
+    fontSize: 32,
+    fontWeight: "900",
+  },
+
+  subheading: {
+    fontSize: 15,
+    lineHeight: 22,
+  },
+
+  emptyCard: {
+    borderWidth: 1,
+    borderRadius: 18,
+    padding: 22,
   },
 
   empty: {
-    color: "#94A3B8",
-    marginTop: 40,
     textAlign: "center",
+    fontSize: 16,
+    fontWeight: "700",
   },
 
   card: {
-    backgroundColor: "#1E293B",
     padding: 16,
-    borderRadius: 14,
+    borderRadius: 18,
     marginBottom: 14,
-
+    borderWidth: 1,
     flexDirection: "row",
-    justifyContent:
-      "space-between",
+    justifyContent: "space-between",
     alignItems: "center",
+    gap: 12,
+  },
+
+  fileInfo: {
+    flex: 1,
   },
 
   fileName: {
-    color: "white",
     fontSize: 16,
-    fontWeight: "bold",
+    fontWeight: "900",
   },
 
   fileType: {
-    color: "#94A3B8",
     marginTop: 6,
+    fontWeight: "700",
   },
 
   deleteButton: {
-    backgroundColor: "#DC2626",
-    paddingVertical: 8,
+    paddingVertical: 9,
     paddingHorizontal: 14,
-    borderRadius: 10,
+    borderRadius: 12,
   },
 
   deleteText: {
-    color: "white",
-    fontWeight: "bold",
+    fontWeight: "900",
   },
 });

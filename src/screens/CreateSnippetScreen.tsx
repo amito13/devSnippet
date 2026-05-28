@@ -1,13 +1,14 @@
 import { Controller, useForm } from "react-hook-form";
 
 import {
-  View,
+  KeyboardAvoidingView,
   Text,
   StyleSheet,
   TouchableOpacity,
   ScrollView,
   Alert,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 
@@ -19,9 +20,11 @@ import {
 } from "../utils/snippetSchema";
 
 import { useSnippetStore } from "../store/snippetStore";
+import { useAppTheme } from "../theme/AppTheme";
 
 export default function CreateSnippetScreen() {
   const { addSnippet } = useSnippetStore();
+  const { colors } = useAppTheme();
 
   const {
     control,
@@ -61,103 +64,156 @@ export default function CreateSnippetScreen() {
   };
 
   return (
-    <ScrollView
-      style={styles.container}
-      contentContainerStyle={{
-        paddingBottom: 40,
-      }}
+    <SafeAreaView
+      style={[
+        styles.container,
+        {
+          backgroundColor: colors.background,
+        },
+      ]}
+      edges={["left", "right"]}
     >
-      <Text style={styles.heading}>
-        Create Snippet
-      </Text>
-
-      <Controller
-        control={control}
-        name="title"
-        render={({ field: { onChange, value } }) => (
-          <CustomInput
-            label="Title"
-            value={value}
-            onChangeText={onChange}
-            placeholder="Enter title"
-            error={errors.title?.message}
-          />
-        )}
-      />
-
-      <Controller
-        control={control}
-        name="language"
-        render={({ field: { onChange, value } }) => (
-          <CustomInput
-            label="Language"
-            value={value}
-            onChangeText={onChange}
-            placeholder="JavaScript"
-            error={errors.language?.message}
-          />
-        )}
-      />
-
-      <Controller
-        control={control}
-        name="tags"
-        render={({ field: { onChange, value } }) => (
-          <CustomInput
-            label="Tags"
-            value={value || ""}
-            onChangeText={onChange}
-            placeholder="react-native,expo"
-            error={errors.tags?.message}
-          />
-        )}
-      />
-
-      <Controller
-        control={control}
-        name="code"
-        render={({ field: { onChange, value } }) => (
-          <CustomInput
-            label="Code"
-            value={value}
-            onChangeText={onChange}
-            placeholder="Write your code..."
-            multiline
-            error={errors.code?.message}
-          />
-        )}
-      />
-
-      <TouchableOpacity
-        style={styles.button}
-        onPress={handleSubmit(onSubmit)}
+      <KeyboardAvoidingView
+        style={styles.keyboardView}
+        behavior={
+          process.env.EXPO_OS === "ios"
+            ? "padding"
+            : "height"
+        }
       >
-        <Text style={styles.buttonText}>
-          Save Snippet
-        </Text>
-      </TouchableOpacity>
-    </ScrollView>
+        <ScrollView
+          keyboardShouldPersistTaps="handled"
+          contentContainerStyle={{
+            padding: 16,
+            paddingBottom: 40,
+            gap: 4,
+          }}
+          contentInsetAdjustmentBehavior="automatic"
+        >
+          <Text
+            selectable
+            style={[
+              styles.heading,
+              {
+                color: colors.text,
+              },
+            ]}
+          >
+            Create Snippet
+          </Text>
+
+          <Text
+            selectable
+            style={[
+              styles.subheading,
+              {
+                color: colors.textMuted,
+              },
+            ]}
+          >
+            Capture code, context, and tags while the
+            thought is fresh.
+          </Text>
+
+          <Controller
+            control={control}
+            name="title"
+            render={({ field: { onChange, value } }) => (
+              <CustomInput
+                label="Title"
+                value={value}
+                onChangeText={onChange}
+                placeholder="Enter title"
+                error={errors.title?.message}
+              />
+            )}
+          />
+
+          <Controller
+            control={control}
+            name="language"
+            render={({ field: { onChange, value } }) => (
+              <CustomInput
+                label="Language"
+                value={value}
+                onChangeText={onChange}
+                placeholder="JavaScript"
+                error={errors.language?.message}
+              />
+            )}
+          />
+
+          <Controller
+            control={control}
+            name="tags"
+            render={({ field: { onChange, value } }) => (
+              <CustomInput
+                label="Tags"
+                value={value || ""}
+                onChangeText={onChange}
+                placeholder="react-native,expo"
+                error={errors.tags?.message}
+              />
+            )}
+          />
+
+          <Controller
+            control={control}
+            name="code"
+            render={({ field: { onChange, value } }) => (
+              <CustomInput
+                label="Code"
+                value={value}
+                onChangeText={onChange}
+                placeholder="Write your code..."
+                multiline
+                error={errors.code?.message}
+              />
+            )}
+          />
+
+          <TouchableOpacity
+            style={[
+              styles.button,
+              {
+                backgroundColor: colors.accent,
+              },
+            ]}
+            onPress={handleSubmit(onSubmit)}
+          >
+            <Text style={styles.buttonText}>
+              Save Snippet
+            </Text>
+          </TouchableOpacity>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#0F172A",
-    padding: 16,
+  },
+
+  keyboardView: {
+    flex: 1,
   },
 
   heading: {
-    color: "white",
     fontSize: 28,
-    fontWeight: "bold",
-    marginBottom: 24,
+    fontWeight: "900",
+  },
+
+  subheading: {
+    fontSize: 15,
+    lineHeight: 22,
+    marginBottom: 18,
   },
 
   button: {
-    backgroundColor: "#F97316",
     padding: 16,
-    borderRadius: 12,
+    borderRadius: 14,
     alignItems: "center",
     marginTop: 10,
   },

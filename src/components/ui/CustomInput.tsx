@@ -5,6 +5,8 @@ import {
   StyleSheet,
 } from "react-native";
 
+import { useAppTheme } from "../../theme/AppTheme";
+
 interface Props {
   label: string;
   value: string;
@@ -22,9 +24,18 @@ export default function CustomInput({
   multiline,
   error,
 }: Props) {
+  const { colors } = useAppTheme();
+
   return (
     <View style={styles.container}>
-      <Text style={styles.label}>
+      <Text
+        style={[
+          styles.label,
+          {
+            color: colors.text,
+          },
+        ]}
+      >
         {label}
       </Text>
 
@@ -32,16 +43,30 @@ export default function CustomInput({
         value={value}
         onChangeText={onChangeText}
         placeholder={placeholder}
-        placeholderTextColor="#64748B"
+        placeholderTextColor={colors.textSubtle}
+        selectionColor={colors.accent}
         multiline={multiline}
         style={[
           styles.input,
+          {
+            backgroundColor: colors.surface,
+            borderColor: colors.border,
+            color: colors.text,
+          },
           multiline && styles.multiline,
         ]}
       />
 
       {error && (
-        <Text style={styles.error}>
+        <Text
+          selectable
+          style={[
+            styles.error,
+            {
+              color: colors.danger,
+            },
+          ]}
+        >
           {error}
         </Text>
       )}
@@ -55,16 +80,16 @@ const styles = StyleSheet.create({
   },
 
   label: {
-    color: "white",
     marginBottom: 8,
     fontSize: 16,
+    fontWeight: "800",
   },
 
   input: {
-    backgroundColor: "#1E293B",
-    color: "white",
     padding: 14,
-    borderRadius: 12,
+    borderRadius: 14,
+    borderWidth: 1,
+    fontSize: 15,
   },
 
   multiline: {
@@ -73,7 +98,7 @@ const styles = StyleSheet.create({
   },
 
   error: {
-    color: "#EF4444",
     marginTop: 6,
+    fontWeight: "700",
   },
 });

@@ -1,32 +1,35 @@
-import { useEffect, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useState,
+} from "react";
 
 import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
   Alert,
   ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
-import {
-  exportSnippetAsText,
-  shareFile,
-} from "../services/exportService";
+import { SafeAreaView } from "react-native-safe-area-context";
+
 import {
   RouteProp,
   useNavigation,
   useRoute,
 } from "@react-navigation/native";
-
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 
-import { RootStackParamList } from "../navigation/types";
-
-import { Snippet } from "../types/snippet";
-
 import { getSnippetById } from "../database/snippetRepository";
-
+import { RootStackParamList } from "../navigation/types";
+import {
+  exportSnippetAsText,
+  shareFile,
+} from "../services/exportService";
 import { useSnippetStore } from "../store/snippetStore";
+import { useAppTheme } from "../theme/AppTheme";
+import { Snippet } from "../types/snippet";
 
 type RouteProps = RouteProp<
   RootStackParamList,
@@ -36,8 +39,31 @@ type RouteProps = RouteProp<
 type NavigationProp =
   NativeStackNavigationProp<RootStackParamList>;
 
-  export default function SnippetDetailsScreen() {
-    const handleExport = async () => {
+export default function SnippetDetailsScreen() {
+  const route = useRoute<RouteProps>();
+  const navigation =
+    useNavigation<NavigationProp>();
+  const { colors } = useAppTheme();
+
+  const { id } = route.params;
+  const [snippet, setSnippet] =
+    useState<Snippet | null>(null);
+
+  const {
+    deleteSnippetById,
+    toggleFavorite,
+  } = useSnippetStore();
+
+  const loadSnippet = useCallback(async () => {
+    const data = await getSnippetById(id);
+    setSnippet(data as Snippet);
+  }, [id]);
+
+  useEffect(() => {
+    loadSnippet();
+  }, [loadSnippet]);
+
+  const handleExport = async () => {
     if (!snippet) return;
 
     const uri =
@@ -47,184 +73,280 @@ type NavigationProp =
       await shareFile(uri);
     }
   };
-    const route = useRoute<RouteProps>();
 
-    const navigation =
-      useNavigation<NavigationProp>();
-
-    const { id } = route.params;
-
-    const [snippet, setSnippet] =
-      useState<Snippet | null>(null);
-
-    const {
-      deleteSnippetById,
-      toggleFavorite,
-    } = useSnippetStore();
-
-    useEffect(() => {
-      loadSnippet();
-    }, []);
-
-    const loadSnippet = async () => {
-      const data = await getSnippetById(id);
-
-      setSnippet(data as Snippet);
-    };
-
-    const handleDelete = () => {
-      Alert.alert(
-        "Delete Snippet",
-        "Are you sure?",
-        [
-          {
-            text: "Cancel",
+  const handleDelete = () => {
+    Alert.alert(
+      "Delete Snippet",
+      "Are you sure?",
+      [
+        {
+          text: "Cancel",
+        },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: async () => {
+            await deleteSnippetById(id);
+            navigation.goBack();
           },
+        },
+      ]
+    );
+  };
 
-          {
-            text: "Delete",
+  const handleFavorite = async () => {
+    if (!snippet) return;
 
-            style: "destructive",
+    await toggleFavorite(
+      snippet.id!,
+      snippet.isFavorite || 0
+    );
 
-            onPress: async () => {
-              await deleteSnippetById(id);
+    loadSnippet();
+  };
 
-              navigation.goBack();
-            },
-          },
-        ]
-      );
-    };
-
-    const handleFavorite = async () => {
-      if (!snippet) return;
-
-      await toggleFavorite(
-        snippet.id!,
-        snippet.isFavorite || 0
-      );
-
-      loadSnippet();
-    };
-
-    if (!snippet) {
-      return null;
-    }
-
+  if (!snippet) {
     return (
-      <ScrollView style={styles.container}>
-        <Text style={styles.title}>
+      <SafeAreaView
+        edges={["left", "right"]}
+        style={[
+          styles.loading,
+          {
+            backgroundColor: colors.background,
+          },
+        ]}
+      />
+    );
+  }
+
+  return (
+    <SafeAreaView
+      edges={["left", "right"]}
+      style={[
+        styles.container,
+        {
+          backgroundColor: colors.background,
+        },
+      ]}
+    >
+      <ScrollView
+        contentContainerStyle={styles.content}
+        contentInsetAdjustmentBehavior="automatic"
+      >
+        <Text
+          selectable
+          style={[
+            styles.title,
+            {
+              color: colors.text,
+            },
+          ]}
+        >
           {snippet.title}
         </Text>
 
-        <Text style={styles.language}>
-          {snippet.language}
-        </Text>
+        <View style={styles.metaRow}>
+          <Text
+            style={[
+              styles.language,
+              {
+                color: colors.accent,
+                backgroundColor: colors.accentSoft,
+              },
+            ]}
+          >
+            {snippet.language}
+          </Text>
 
-        <Text style={styles.tags}>
-          {snippet.tags}
-        </Text>
+          {snippet.isFavorite === 1 && (
+            <Text
+              style={[
+                styles.favoritePill,
+                {
+                  color: colors.accent,
+                  backgroundColor: colors.accentSoft,
+                },
+              ]}
+            >
+              Favorite
+            </Text>
+          )}
+        </View>
 
-        <View style={styles.codeContainer}>
-          <Text style={styles.code}>
+        {snippet.tags ? (
+          <Text
+            selectable
+            style={[
+              styles.tags,
+              {
+                color: colors.textMuted,
+              },
+            ]}
+          >
+            {snippet.tags}
+          </Text>
+        ) : null}
+
+        <View
+          style={[
+            styles.codeContainer,
+            {
+              backgroundColor: colors.surface,
+              borderColor: colors.border,
+            },
+          ]}
+        >
+          <Text
+            selectable
+            style={[
+              styles.code,
+              {
+                color: colors.text,
+              },
+            ]}
+          >
             {snippet.code}
           </Text>
         </View>
 
-        <TouchableOpacity
-          style={styles.favoriteButton}
-          onPress={handleFavorite}
-        >
-          <Text style={styles.buttonText}>
-            {snippet.isFavorite
-              ? "Remove Favorite"
-              : "Add Favorite"}
-          </Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-        style={styles.exportButton}
-        onPress={handleExport}
+        <View style={styles.buttonGroup}>
+          <TouchableOpacity
+            activeOpacity={0.85}
+            style={[
+              styles.button,
+              {
+                backgroundColor: colors.accent,
+              },
+            ]}
+            onPress={handleFavorite}
           >
-        <Text style={styles.buttonText}>
-          Export Snippet
-        </Text>
-        </TouchableOpacity>  
-        <TouchableOpacity
-          style={styles.deleteButton}
-          onPress={handleDelete}
-        >
-          <Text style={styles.buttonText}>
-            Delete Snippet
-          </Text>
-        </TouchableOpacity>
+            <Text style={styles.buttonText}>
+              {snippet.isFavorite
+                ? "Remove Favorite"
+                : "Add Favorite"}
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            activeOpacity={0.85}
+            style={[
+              styles.button,
+              {
+                backgroundColor: colors.surfaceMuted,
+                borderColor: colors.border,
+                borderWidth: 1,
+              },
+            ]}
+            onPress={handleExport}
+          >
+            <Text
+              style={[
+                styles.buttonText,
+                {
+                  color: colors.text,
+                },
+              ]}
+            >
+              Export Snippet
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            activeOpacity={0.85}
+            style={[
+              styles.button,
+              {
+                backgroundColor: colors.danger,
+              },
+            ]}
+            onPress={handleDelete}
+          >
+            <Text style={styles.buttonText}>
+              Delete Snippet
+            </Text>
+          </TouchableOpacity>
+        </View>
       </ScrollView>
-    );
-  } 
+    </SafeAreaView>
+  );
+}
 
 const styles = StyleSheet.create({
+  loading: {
+    flex: 1,
+  },
+
   container: {
     flex: 1,
-    backgroundColor: "#0F172A",
+  },
+
+  content: {
     padding: 16,
+    paddingBottom: 40,
+    gap: 16,
   },
 
   title: {
-    color: "white",
-    fontSize: 28,
-    fontWeight: "bold",
+    fontSize: 32,
+    fontWeight: "900",
+    lineHeight: 38,
+  },
+
+  metaRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 10,
   },
 
   language: {
-    color: "#F97316",
-    marginTop: 10,
-    fontSize: 18,
+    overflow: "hidden",
+    borderRadius: 999,
+    paddingVertical: 7,
+    paddingHorizontal: 12,
+    fontSize: 13,
+    fontWeight: "900",
+  },
+
+  favoritePill: {
+    overflow: "hidden",
+    borderRadius: 999,
+    paddingVertical: 7,
+    paddingHorizontal: 12,
+    fontSize: 13,
+    fontWeight: "900",
   },
 
   tags: {
-    color: "#CBD5E1",
-    marginTop: 10,
+    fontSize: 15,
+    lineHeight: 22,
   },
 
   codeContainer: {
-    backgroundColor: "#1E293B",
+    borderWidth: 1,
+    borderRadius: 18,
     padding: 16,
-    borderRadius: 12,
-    marginTop: 20,
   },
 
   code: {
-    color: "white",
     fontFamily: "monospace",
     lineHeight: 22,
   },
 
-  favoriteButton: {
-    backgroundColor: "#2563EB",
-    padding: 16,
-    borderRadius: 12,
-    alignItems: "center",
-    marginTop: 24,
+  buttonGroup: {
+    gap: 12,
   },
 
-  exportButton: {
-    backgroundColor: "#10B981",
-    padding: 16,
-    borderRadius: 12,
+  button: {
+    minHeight: 52,
+    borderRadius: 14,
     alignItems: "center",
-    marginTop: 16,
-  },
-
-  deleteButton: {
-    backgroundColor: "#DC2626",
-    padding: 16,
-    borderRadius: 12,
-    alignItems: "center",
-    marginTop: 16,
+    justifyContent: "center",
+    paddingHorizontal: 16,
   },
 
   buttonText: {
-    color: "white",
-    fontWeight: "bold",
+    color: "#FFFFFF",
+    fontSize: 16,
+    fontWeight: "900",
   },
 });

@@ -1,23 +1,20 @@
 import { useMemo } from "react";
 
 import {
-  View,
-  Text,
-  StyleSheet,
   FlatList,
+  StyleSheet,
+  Text,
+  View,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
-import {
-  useNavigation,
-} from "@react-navigation/native";
-
+import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 
-import { RootStackParamList } from "../navigation/types";
-
-import { useSnippetStore } from "../store/snippetStore";
-
 import SnippetCard from "../components/snippet/SnippetCard";
+import { RootStackParamList } from "../navigation/types";
+import { useSnippetStore } from "../store/snippetStore";
+import { useAppTheme } from "../theme/AppTheme";
 
 type NavigationProp =
   NativeStackNavigationProp<RootStackParamList>;
@@ -29,6 +26,8 @@ export default function FavoritesScreen() {
   const { snippets } =
     useSnippetStore();
 
+  const { colors } = useAppTheme();
+
   const favoriteSnippets =
     useMemo(() => {
       return snippets.filter(
@@ -38,34 +37,80 @@ export default function FavoritesScreen() {
     }, [snippets]);
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.heading}>
-        Favorite Snippets
-      </Text>
-
+    <SafeAreaView
+      edges={["top", "left", "right"]}
+      style={[
+        styles.container,
+        {
+          backgroundColor: colors.background,
+        },
+      ]}
+    >
       <FlatList
         data={favoriteSnippets}
         keyExtractor={(item) =>
           item.id!.toString()
         }
-        contentContainerStyle={{
-          paddingTop: 20,
-          paddingBottom: 40,
-        }}
+        contentContainerStyle={styles.listContent}
+        ListHeaderComponent={
+          <View style={styles.header}>
+            <Text
+              selectable
+              style={[
+                styles.heading,
+                {
+                  color: colors.text,
+                },
+              ]}
+            >
+              Favorites
+            </Text>
+
+            <Text
+              selectable
+              style={[
+                styles.subheading,
+                {
+                  color: colors.textMuted,
+                },
+              ]}
+            >
+              Your high-signal snippets, saved for
+              fast recall.
+            </Text>
+          </View>
+        }
         ListEmptyComponent={
-          <View style={styles.emptyContainer}>
-            <Text style={styles.emptyEmoji}>
-              ⭐
+          <View
+            style={[
+              styles.emptyContainer,
+              {
+                backgroundColor: colors.surface,
+                borderColor: colors.border,
+              },
+            ]}
+          >
+            <Text
+              style={[
+                styles.emptyTitle,
+                {
+                  color: colors.text,
+                },
+              ]}
+            >
+              No favorites yet
             </Text>
 
-            <Text style={styles.emptyTitle}>
-              No Favorites Yet
-            </Text>
-
-            <Text style={styles.emptyText}>
-              Mark important snippets as
-              favorites to quickly access
-              them later.
+            <Text
+              style={[
+                styles.emptyText,
+                {
+                  color: colors.textMuted,
+                },
+              ]}
+            >
+              Mark important snippets as favorites and
+              they will collect here.
             </Text>
           </View>
         }
@@ -83,58 +128,49 @@ export default function FavoritesScreen() {
           />
         )}
       />
-    </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
 
-    backgroundColor: "#0F172A",
-
+  listContent: {
     padding: 16,
+    paddingBottom: 40,
+  },
+
+  header: {
+    marginBottom: 20,
+    gap: 8,
   },
 
   heading: {
-    color: "white",
+    fontSize: 32,
+    fontWeight: "900",
+  },
 
-    fontSize: 30,
-
-    fontWeight: "bold",
+  subheading: {
+    fontSize: 15,
+    lineHeight: 22,
   },
 
   emptyContainer: {
-    marginTop: 120,
-
-    alignItems: "center",
-
-    paddingHorizontal: 30,
-  },
-
-  emptyEmoji: {
-    fontSize: 54,
+    borderWidth: 1,
+    borderRadius: 18,
+    padding: 24,
+    gap: 10,
   },
 
   emptyTitle: {
-    color: "white",
-
-    fontSize: 24,
-
-    fontWeight: "bold",
-
-    marginTop: 18,
+    fontSize: 22,
+    fontWeight: "900",
   },
 
   emptyText: {
-    color: "#94A3B8",
-
-    textAlign: "center",
-
-    marginTop: 12,
-
     lineHeight: 24,
-
     fontSize: 16,
   },
 });
