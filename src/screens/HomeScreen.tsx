@@ -129,7 +129,7 @@ export default function HomeScreen() {
                   New Snippet
                 </Text>
               </TouchableOpacity>
-
+{/* 
               <TouchableOpacity
                 activeOpacity={0.85}
                 style={[
@@ -151,7 +151,7 @@ export default function HomeScreen() {
                 >
                   Quick Add
                 </Text>
-              </TouchableOpacity>
+              </TouchableOpacity> */}
             </View>
 
             <View
