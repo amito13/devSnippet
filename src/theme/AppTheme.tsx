@@ -12,9 +12,9 @@ import {
   Theme as NavigationTheme,
 } from "@react-navigation/native";
 
-export type ThemeMode = "zinc" | "ember";
+export type ThemeMode = "dark" | "light";
 
-const zincPalette = {
+const darkPalette = {
   background: "#09090B",
   surface: "#18181B",
   surfaceMuted: "#27272A",
@@ -30,23 +30,27 @@ const zincPalette = {
   danger: "#DC2626",
 };
 
-const emberPalette = {
-  ...zincPalette,
-  background: "#030303",
-  surface: "#121212",
-  surfaceMuted: "#1F1F1F",
-  surfaceSoft: "#2D2D2D",
-  border: "#3A2A22",
-  accent: "#F97316",
-  accentStrong: "#EA580C",
-  accentSoft: "#3B1605",
+const lightPalette = {
+  background: "#FFFFFF",
+  surface: "#FFF7ED",
+  surfaceMuted: "#FFEDD5",
+  surfaceSoft: "#FED7AA",
+  text: "#18181B",
+  textMuted: "#57534E",
+  textSubtle: "#A8A29E",
+  border: "#FED7AA",
+  accent: "#EA580C",
+  accentStrong: "#C2410C",
+  accentSoft: "#FFEDD5",
+  success: "#16A34A",
+  danger: "#DC2626",
 };
 
-export type AppPalette = typeof zincPalette;
+export type AppPalette = typeof darkPalette;
 
 type AppThemeContextValue = {
   mode: ThemeMode;
-  isEmber: boolean;
+  isDark: boolean;
   colors: AppPalette;
   navigationTheme: NavigationTheme;
   toggleMode: () => void;
@@ -61,24 +65,24 @@ export function AppThemeProvider({
   children: ReactNode;
 }) {
   const [mode, setMode] =
-    useState<ThemeMode>("zinc");
+    useState<ThemeMode>("dark");
 
   const toggleMode = useCallback(() => {
     setMode((currentMode) =>
-      currentMode === "zinc" ? "ember" : "zinc"
+      currentMode === "dark" ? "light" : "dark"
     );
   }, []);
 
   const colors =
-    mode === "zinc"
-      ? zincPalette
-      : emberPalette;
+    mode === "dark"
+      ? darkPalette
+      : lightPalette;
 
   const navigationTheme =
     useMemo<NavigationTheme>(
       () => ({
         ...DefaultTheme,
-        dark: true,
+        dark: mode === "dark",
         colors: {
           ...DefaultTheme.colors,
           primary: colors.accent,
@@ -89,14 +93,14 @@ export function AppThemeProvider({
           notification: colors.accent,
         },
       }),
-      [colors]
+      [colors, mode]
     );
 
   const value =
     useMemo<AppThemeContextValue>(
       () => ({
         mode,
-        isEmber: mode === "ember",
+        isDark: mode === "dark",
         colors,
         navigationTheme,
         toggleMode,

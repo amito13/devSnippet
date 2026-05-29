@@ -1,6 +1,6 @@
 import {
+  Pressable,
   StyleSheet,
-  Switch,
   Text,
   View,
 } from "react-native";
@@ -10,83 +10,80 @@ import { useAppTheme } from "../../theme/AppTheme";
 export default function ThemeSwitch() {
   const {
     colors,
-    isEmber,
+    isDark,
     toggleMode,
   } = useAppTheme();
 
   return (
-    <View
-      style={[
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel="Toggle light and dark theme"
+      onPress={toggleMode}
+      style={({ pressed }) => [
         styles.container,
         {
           backgroundColor: colors.surface,
           borderColor: colors.border,
+          opacity: pressed ? 0.78 : 1,
         },
       ]}
     >
-      <View>
-        <Text
-          style={[
-            styles.label,
-            {
-              color: colors.text,
-            },
-          ]}
-        >
-          {isEmber ? "Ember" : "Zinc"}
-        </Text>
-
-        <Text
-          style={[
-            styles.caption,
-            {
-              color: colors.textMuted,
-            },
-          ]}
-        >
-          Theme
+      <View
+        style={[
+          styles.emojiBubble,
+          {
+            backgroundColor: colors.accentSoft,
+          },
+        ]}
+      >
+        <Text style={styles.emoji}>
+          {isDark ? "🌙" : "☀️"}
         </Text>
       </View>
 
-      <Switch
-        value={isEmber}
-        onValueChange={toggleMode}
-        trackColor={{
-          false: colors.surfaceSoft,
-          true: colors.accentSoft,
-        }}
-        thumbColor={
-          isEmber
-            ? colors.accent
-            : colors.textMuted
-        }
-      />
-    </View>
+      {/* <Text
+        style={[
+          styles.label,
+          {
+            color: colors.text,
+          },
+        ]}
+      >
+        {isDark ? "Dark" : "Light"}
+      </Text> */}
+    </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    minWidth: 132,
-    minHeight: 54,
+    minWidth: 1,
+    minHeight: 52,
     borderWidth: 1,
-    borderRadius: 18,
-    paddingLeft: 14,
-    paddingRight: 8,
+    borderRadius: 999,
+    paddingVertical: 7,
+    paddingLeft: 8,
+    paddingRight: 14,
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-between",
+    justifyContent: "center",
     gap: 8,
+  },
+
+  emojiBubble: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  emoji: {
+    fontSize: 18,
   },
 
   label: {
     fontSize: 14,
     fontWeight: "900",
-  },
-
-  caption: {
-    fontSize: 11,
-    fontWeight: "700",
-    marginTop: 2,
   },
 });

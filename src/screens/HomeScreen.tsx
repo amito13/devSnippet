@@ -26,7 +26,6 @@ export default function HomeScreen() {
 
   const {
     snippets,
-    addSnippet,
     loadSnippets,
   } = useSnippetStore();
 
@@ -37,18 +36,6 @@ export default function HomeScreen() {
   useEffect(() => {
     loadSnippets();
   }, [loadSnippets]);
-
-  const handleAddSnippet = async () => {
-    await addSnippet({
-      title: "React Native Notes",
-      code: "console.log('Expo App')",
-      language: "JavaScript",
-      tags: "react-native,expo",
-      isFavorite: 0,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    });
-  };
 
   return (
     <SafeAreaView
@@ -129,29 +116,6 @@ export default function HomeScreen() {
                   New Snippet
                 </Text>
               </TouchableOpacity>
-{/* 
-              <TouchableOpacity
-                activeOpacity={0.85}
-                style={[
-                  styles.secondaryButton,
-                  {
-                    borderColor: colors.border,
-                    backgroundColor: colors.surface,
-                  },
-                ]}
-                onPress={handleAddSnippet}
-              >
-                <Text
-                  style={[
-                    styles.secondaryButtonText,
-                    {
-                      color: colors.text,
-                    },
-                  ]}
-                >
-                  Quick Add
-                </Text>
-              </TouchableOpacity> */}
             </View>
 
             <View
@@ -425,20 +389,6 @@ const styles = StyleSheet.create({
     color: "#FFFFFF",
     fontSize: 16,
     fontWeight: "900",
-  },
-
-  secondaryButton: {
-    flex: 1,
-    minHeight: 50,
-    borderRadius: 14,
-    borderWidth: 1,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-
-  secondaryButtonText: {
-    fontSize: 16,
-    fontWeight: "800",
   },
 
   statsCard: {
